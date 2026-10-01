@@ -90,7 +90,7 @@ test('legacy clipboard succeeds when modern clipboard rejects', async ({ page })
   await finishSpin(page);
   await page.getByRole('button', { name: 'Copy link', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Link copied', exact: true })).toBeVisible();
-  await expect(page.locator('textarea')).toHaveCount(0);
+  await expect(page.locator('.copy-fallback textarea, body > textarea')).toHaveCount(0);
 });
 
 test('corrupt storage and invalid URL values recover', async ({ page }) => {

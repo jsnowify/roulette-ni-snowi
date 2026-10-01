@@ -4,6 +4,7 @@ import { REEL_DEFS } from "../data/reels";
 import { MAX_LEN, MAX_PER_REEL } from "../hooks/useCustomEntries";
 import type { AddResult, Custom } from "../hooks/useCustomEntries";
 import type { Key } from "../types";
+import OptionPicker from './OptionPicker';
 
 type Props = {
   custom: Custom;
@@ -50,25 +51,16 @@ export default function CustomEntries({
           appear when Extra reels is on.
         </p>
         <form className="custom-form" onSubmit={submit}>
-          <label className="sr-only" htmlFor="custom-reel">
-            Reel
-          </label>
-          <select
-            id="custom-reel"
-            className="field"
+          <OptionPicker
+            label="Reel"
             value={key}
             disabled={busy}
-            onChange={(event) => {
-              setKey(event.target.value as Key);
+            options={REEL_DEFS.map(reel => ({ value: reel.key, label: reel.label, detail: `${custom[reel.key].length}/${MAX_PER_REEL} entries` }))}
+            onChange={(value) => {
+              setKey(value as Key);
               setMessage("");
             }}
-          >
-            {REEL_DEFS.map((reel) => (
-              <option key={reel.key} value={reel.key}>
-                {reel.label} ({custom[reel.key].length}/{MAX_PER_REEL})
-              </option>
-            ))}
-          </select>
+          />
           <label className="sr-only" htmlFor="custom-entry">
             New entry
           </label>

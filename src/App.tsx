@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import CategoryNote from "./components/CategoryNote";
 import CustomEntries from "./components/CustomEntries";
 import Header from "./components/Header";
@@ -8,6 +8,7 @@ import { BUILTIN_ITEMS, REEL_DEFS, mergeItems } from "./data/reels";
 import { useCustomEntries } from "./hooks/useCustomEntries";
 import { usePersistentState } from "./hooks/usePersistentState";
 import { useSavedBriefs } from "./hooks/useSavedBriefs";
+import { useSmoothScroll } from "./hooks/useSmoothScroll";
 import { article, briefSentence, fromSearch, toSearch } from "./lib/brief";
 import { copyText } from "./lib/clipboard";
 import { MAX_SAVED } from "./lib/saved";
@@ -32,14 +33,17 @@ const EXTRAS_KEY = "roulette-ni-snowi:extras";
 const SOUND_KEY = "roulette-ni-snowi:sound";
 
 const isBoolean = (v: unknown): v is boolean => typeof v === "boolean";
+const UiStyleGuide = lazy(() => import("./components/UiStyleGuide"));
 
 export default function App() {
+  useSmoothScroll();
   const { custom, add: addCustom, remove: removeCustom } = useCustomEntries();
   const items = useMemo(() => mergeItems(custom), [custom]);
 
   // Kung galing sa share link (?brand=...&category=...), iyon ang unang laman.
   const [fromLink] = useState(() => fromSearch(window.location.search, items));
   const [pick, setPick] = useState<Brief>(fromLink ?? EMPTY);
+  const [design, setDesign] = useState({ brief: fromLink, revision: 0 });
   const [history, setHistory] = useState<Brief[]>(() =>
     fromLink ? [fromLink] : [],
   );
@@ -122,6 +126,7 @@ export default function App() {
 
     const final = targetRef.current;
     setPick(final);
+    setDesign(previous => ({ brief: extras ? final : { ...final, mood: null }, revision: previous.revision + 1 }));
     setHistory((h) => [final, ...h].slice(0, HISTORY_MAX));
     setSpinning(false);
     spinActive.current = false;
@@ -381,6 +386,10 @@ export default function App() {
           onRemove={savedApi.remove}
         />
       )}
+
+      <Suspense fallback={<p className="hint">Loading UI colors and fonts…</p>}>
+        <UiStyleGuide brief={design.brief && isComplete(design.brief) ? design.brief : null} revision={design.revision} />
+      </Suspense>
 
       <CustomEntries
         custom={custom}
