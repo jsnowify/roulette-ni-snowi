@@ -1,0 +1,757 @@
+@import url("https://fonts.googleapis.com/css2?family=Oxanium:wght@400..800&family=Share+Tech+Mono&display=swap");
+
+:root {
+  --paper: #ffffff;
+  --ink: #0a0a0a;
+  --tray: #f3f3f3;
+  --line: #d9d9d9;
+  --gray: #8c8c8c;
+  --muted: #5f5f5f;
+  --row: 88px;
+  --cut: 16px;
+
+  font-family: "Oxanium", system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: #000;
+  color: #fff;
+}
+
+::-moz-selection {
+  background: #000;
+  color: #fff;
+}
+
+html,
+body {
+  min-width: 320px;
+  background: var(--paper);
+}
+
+html {
+  scrollbar-width: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.055) 1px, transparent 1px);
+  background-size: 36px 36px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  border: 0;
+  cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+p {
+  margin: 0;
+}
+
+.page {
+  width: 100%;
+  max-width: 1080px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 24px 28px 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* HUD text */
+.status,
+.reel-head small,
+.key,
+.result-label,
+.hint,
+.history li,
+.footer {
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+}
+
+/* header ball (animated with Motion) */
+.roller {
+  position: absolute;
+  left: 0;
+  right: 14px;
+  bottom: 0;
+  height: 14px;
+  pointer-events: none;
+}
+
+.roller-track {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 14px;
+  height: 14px;
+}
+
+.roller-squash {
+  display: block;
+  width: 14px;
+  height: 14px;
+  transform-origin: 50% 100%;
+}
+
+.roller-ball {
+  display: block;
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+  transition: background-color 120ms ease;
+}
+
+.roller-ball::after {
+  content: "";
+  position: absolute;
+  top: 1px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+/* flat on the line: a solid puck */
+.roller.is-flat .roller-ball {
+  background: var(--ink);
+}
+
+.eye {
+  position: absolute;
+  left: -5px;
+  bottom: 2px;
+  width: 24px;
+  height: 24px;
+  transform-origin: 50% 100%;
+}
+
+.eye-lid {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--paper);
+}
+
+.eye-pupil {
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+
+/* saved briefs, milestones */
+.result-actions {
+  display: flex;
+  flex-shrink: 0;
+  gap: 10px;
+}
+
+.copy:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.copy:disabled:hover {
+  background: transparent;
+  color: var(--ink);
+}
+
+.saved {
+  margin-top: 32px;
+}
+
+.saved ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.saved li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 14px;
+  background: var(--tray);
+  border: 1px solid var(--line);
+}
+
+.saved label {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+}
+
+.saved input {
+  width: 18px;
+  height: 18px;
+  margin: 2px 0 0;
+  accent-color: var(--ink);
+  flex-shrink: 0;
+}
+
+.saved .is-done span {
+  color: var(--gray);
+  text-decoration: line-through;
+}
+
+.remove {
+  flex-shrink: 0;
+  background: none;
+  color: var(--muted);
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  font-size: 0.85rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.burst {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  pointer-events: none;
+}
+
+.bit {
+  position: absolute;
+  display: block;
+  width: 7px;
+  height: 7px;
+  background: var(--ink);
+}
+
+.bit:nth-child(even) {
+  border-radius: 50%;
+}
+
+.burst-label {
+  position: absolute;
+  top: 34px;
+  right: -60px;
+  white-space: nowrap;
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  animation: burst-label 1.4s ease forwards;
+}
+
+@keyframes burst-label {
+  0% {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  15%,
+  80% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* header */
+.top {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--ink);
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.top-right {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.poke-wrap {
+  position: relative;
+}
+
+.poke {
+  padding: 6px 14px;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  font-size: 0.9rem;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    transform 80ms ease;
+}
+
+.poke:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.poke:active {
+  transform: scale(0.93);
+}
+
+.pop {
+  position: absolute;
+  right: 6px;
+  top: -2px;
+  pointer-events: none;
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  font-size: 0.9rem;
+  font-weight: 700;
+  animation: pop 800ms ease-out forwards;
+}
+
+@keyframes pop {
+  from {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(var(--dx), -44px);
+  }
+}
+
+.poke-note {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  color: var(--muted);
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.status {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.title {
+  margin: 52px 0 32px;
+  font-size: clamp(2.3rem, 6.2vw, 4.7rem);
+  font-weight: 700;
+  line-height: 0.98;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+}
+
+/* machine */
+.machine {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+  gap: 16px;
+}
+
+.reel {
+  position: relative;
+  padding: 14px 16px 8px;
+  background: var(--tray);
+  border: 1px solid var(--line);
+  color: var(--gray);
+}
+
+/* corner brackets */
+.reel::before,
+.reel::after {
+  content: "";
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 0 solid var(--ink);
+}
+
+.reel::before {
+  top: -1px;
+  left: -1px;
+  border-width: 2px 0 0 2px;
+}
+
+.reel::after {
+  right: -1px;
+  bottom: -1px;
+  border-width: 0 2px 2px 0;
+}
+
+.reel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  color: var(--ink);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.reel-head small {
+  margin-left: 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
+.lock {
+  padding: 4px 12px;
+  background: transparent;
+  border: 1px solid var(--ink);
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  font-size: 0.82rem;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.lock:hover:not(:disabled) {
+  background: var(--line);
+}
+
+.lock[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.lock:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.window {
+  position: relative;
+  height: calc(var(--row) * 3);
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(
+    transparent 0%,
+    #000 35%,
+    #000 65%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    transparent 0%,
+    #000 35%,
+    #000 65%,
+    transparent 100%
+  );
+}
+
+.strip {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.18, 0.82, 0.18, 1);
+  will-change: transform;
+}
+
+.item {
+  height: var(--row);
+  padding: 0 8px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  text-align: center;
+  text-transform: uppercase;
+  font-size: clamp(1.9rem, 4.2vw, 3.1rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: 0.05em;
+}
+
+.item-long {
+  font-size: clamp(1.15rem, 2.3vw, 1.75rem);
+  letter-spacing: 0.04em;
+}
+
+/* highlight: same strip clipped to the centre row, black with white text */
+.band {
+  position: absolute;
+  inset: var(--row) 0 auto 0;
+  height: var(--row);
+  overflow: hidden;
+  background: var(--ink);
+  color: var(--paper);
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--cut)) 0,
+    100% var(--cut),
+    100% 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut))
+  );
+}
+
+/* scan line while a reel is moving */
+.reel[data-run="true"] .window::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  background: var(--ink);
+  opacity: 0.45;
+  animation: scan 900ms linear infinite;
+}
+
+@keyframes scan {
+  to {
+    top: 100%;
+  }
+}
+
+/* controls */
+.controls {
+  margin-top: 24px;
+}
+
+.spin {
+  width: 100%;
+  height: 68px;
+  padding: 0 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--cut)) 0,
+    100% var(--cut),
+    100% 100%,
+    var(--cut) 100%,
+    0 calc(100% - var(--cut))
+  );
+  transition: background-color 120ms ease;
+}
+
+.spin:hover:not(:disabled) {
+  background: #2a2a2a;
+}
+
+.spin:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.spin:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.key {
+  padding: 3px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: none;
+}
+
+.hint {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+/* result */
+.result {
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid var(--ink);
+}
+
+.result-label {
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.result-label::before {
+  content: "// ";
+}
+
+.result-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.brief {
+  max-width: 820px;
+  font-size: clamp(1.8rem, 4.2vw, 3.3rem);
+  font-weight: 400;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+.brief strong {
+  font-weight: 700;
+}
+
+.copy {
+  flex-shrink: 0;
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid var(--ink);
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+
+.copy:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* history */
+.history {
+  margin-top: 32px;
+}
+
+.history ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.history li {
+  padding: 6px 12px;
+  background: var(--tray);
+  border: 1px solid var(--line);
+  font-size: 0.9rem;
+}
+
+.footer a {
+  color: var(--ink);
+  text-underline-offset: 3px;
+}
+
+.status,
+.reel-head small,
+.result-label,
+.hint,
+.history li,
+.lock,
+.copy,
+.poke,
+.pop,
+.poke-note,
+.footer {
+  letter-spacing: 0.03em;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  margin-top: auto;
+  padding-top: 48px;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+@media (max-width: 720px) {
+  :root {
+    --row: 72px;
+    --cut: 12px;
+  }
+
+  .page {
+    padding: 16px 16px 20px;
+  }
+
+  .title {
+    margin: 36px 0 24px;
+  }
+
+  .machine {
+    grid-template-columns: 1fr;
+  }
+
+  .result-actions {
+    flex-wrap: wrap;
+  }
+
+  .saved li {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .key,
+  .status {
+    display: none;
+  }
+
+  .result-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 22px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
