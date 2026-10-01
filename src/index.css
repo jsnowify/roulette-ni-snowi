@@ -755,3 +755,210 @@ p {
     animation-duration: 0.01ms !important;
   }
 }
+
+/* ---------- additions: extra reels, toggles, notes, saved tools, more panel ---------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* smaller reels for Mood / Constraint */
+.reel-compact {
+  --row: 72px;
+}
+
+.reel-compact .item {
+  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+}
+
+.reel-compact .item-long {
+  font-size: clamp(1rem, 1.9vw, 1.4rem);
+}
+
+/* chips reuse the .lock look (including aria-pressed) */
+.chip {
+  padding: 6px 14px;
+}
+
+.chip small {
+  margin-left: 6px;
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
+.toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* result */
+.result-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.brief-long {
+  font-size: clamp(1.4rem, 3.1vw, 2.4rem);
+}
+
+.note {
+  display: grid;
+  gap: 6px;
+  max-width: 820px;
+  margin-top: 24px;
+  padding: 14px 16px;
+  background: var(--tray);
+  border: 1px solid var(--line);
+  line-height: 1.4;
+}
+
+.note .result-label {
+  margin-bottom: 4px;
+}
+
+/* saved briefs */
+.saved-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  margin-bottom: 12px;
+}
+
+.saved-tools .group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stats,
+.empty,
+.msg,
+.more summary,
+.custom-list small,
+.field {
+  font-family: "Share Tech Mono", ui-monospace, monospace;
+}
+
+.stats {
+  margin-bottom: 12px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* more panel */
+.more {
+  margin-top: 32px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.more summary {
+  width: fit-content;
+  color: var(--muted);
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.more summary:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+.more-body {
+  display: grid;
+  gap: 28px;
+  margin-top: 18px;
+}
+
+.custom-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.field {
+  height: 40px;
+  padding: 0 12px;
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  color: inherit;
+  font-size: 0.9rem;
+}
+
+.field:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
+.custom-form .field[type="text"] {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.msg {
+  min-height: 1.2em;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.custom-list {
+  display: grid;
+  gap: 6px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.custom-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 12px;
+  background: var(--tray);
+  border: 1px solid var(--line);
+}
+
+.custom-list small {
+  margin-right: 8px;
+  color: var(--muted);
+}
+
+.file-pick {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.file-pick:focus-within {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+  .reel-compact {
+    --row: 60px;
+  }
+
+  .result-actions {
+    justify-content: flex-start;
+  }
+}

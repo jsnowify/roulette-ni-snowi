@@ -1,0 +1,26 @@
+// Constraint = limitasyon na nagpapalabas ng creativity. Optional (Extra reels).
+// Pinaikli (mga 30 characters pababa) para kasya sa reel.
+export const constraints: readonly string[] = [
+  "Only two colors",
+  "One accent color only",
+  "Black & white only",
+  "One font only",
+  "No images",
+  "No gradients",
+  "No rounded corners",
+  "Dark mode only",
+  "Everything on a grid",
+  "Giant typography",
+  "Text-only hero",
+  "One page, no navbar",
+  "Max 3 sections",
+  "Animate only on hover",
+  "Emoji as icons",
+  "No animation libraries",
+  "Mobile-first design",
+  "Only one interaction",
+  "Keyboard-friendly first",
+  "Finish in 24 hours",
+  "Finish in a weekend",
+  "Finish in 1 week",
+];

@@ -1,0 +1,23 @@
+// Mood = ang "personality" ng website. Optional ito (Extra reels).
+export const moods: readonly string[] = [
+  "Playful",
+  "Serious",
+  "Luxurious",
+  "Minimal",
+  "Brutalist",
+  "Retro",
+  "Futuristic",
+  "Warm",
+  "Calm",
+  "Bold",
+  "Elegant",
+  "Quirky",
+  "Dark",
+  "Dreamy",
+  "Industrial",
+  "Organic",
+  "Nostalgic",
+  "Energetic",
+  "Mysterious",
+  "Clean",
+];
