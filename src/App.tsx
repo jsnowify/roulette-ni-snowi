@@ -226,14 +226,14 @@ export default function App() {
       <Header spinning={spinning} spinCount={spinId} />
 
       <h1 className="title">
-        <span className="sr-only">Roulette ni snowi: Website project idea generator. </span>
-        Spin for your
+        Roulette{" "}
         <br />
-        next website.
+        ni snowi
       </h1>
       <p className="intro">
         A free website project idea generator for developers and designers.
-        Spin for a brand, category, and mood, then build something new.
+        Spin for a brand, category, and mood, get suggested UI colors and fonts,
+        then build something new.
       </p>
 
       <section className="machine" aria-label="Roulette reels">
