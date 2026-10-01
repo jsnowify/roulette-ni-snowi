@@ -21,8 +21,9 @@ const isCustom = (v: unknown): v is Custom => {
       Array.isArray(list) &&
       list.length <= MAX_PER_REEL &&
       list.every(
-        (x) => typeof x === "string" && x.length > 0 && x.length <= MAX_LEN,
-      )
+        (x) => typeof x === "string" && x.trim().length > 0 && x.length <= MAX_LEN && x === x.trim().replace(/\s+/g, " "),
+      ) && new Set(list.map((x: string) => x.toLowerCase())).size === list.length &&
+      !list.some((x: string) => BUILTIN_ITEMS[k].some((builtin) => builtin.toLowerCase() === x.toLowerCase()))
     );
   });
 };

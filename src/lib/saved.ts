@@ -40,8 +40,8 @@ function normalize(raw: unknown): SavedBrief | null {
     category: r.category,
     mood: text(r.mood) ? r.mood : null,
     done,
-    savedAt: typeof r.savedAt === "number" ? r.savedAt : Date.now(),
-    doneAt: done && typeof r.doneAt === "number" ? r.doneAt : null,
+    savedAt: typeof r.savedAt === "number" && Number.isFinite(r.savedAt) ? r.savedAt : Date.now(),
+    doneAt: done && typeof r.doneAt === "number" && Number.isFinite(r.doneAt) ? r.doneAt : null,
   };
 }
 
@@ -50,7 +50,11 @@ function parseList(raw: unknown): SavedBrief[] {
   const out: SavedBrief[] = [];
   for (const item of raw) {
     const brief = normalize(item);
-    if (brief && !out.some((x) => sameBrief(x, brief))) out.push(brief);
+    if (brief && !out.some((x) => sameBrief(x, brief))) {
+      if (out.some((x) => x.id === brief.id)) brief.id = newId();
+      out.push(brief);
+      if (out.length >= MAX_SAVED) break;
+    }
   }
   return out.slice(0, MAX_SAVED);
 }

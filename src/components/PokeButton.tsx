@@ -7,6 +7,15 @@ const POKE_API = "https://abacus.jasoncameron.dev";
 const POKE_PATH = "roulette-ni-snowi/pokes";
 // Pinakamaikling pagitan ng dalawang poke. Para hindi ma-spam ang libreng API.
 const COOLDOWN_MS = 200;
+const REFRESH_MS = 10_000;
+
+function counterValue(data: unknown): number {
+  const value = data && typeof data === "object" ? (data as { value?: unknown }).value : null;
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 0) {
+    throw new Error("Invalid counter response");
+  }
+  return value;
+}
 
 type Burst = {
   id: number;
@@ -18,22 +27,131 @@ export default function PokeButton() {
   const reduceMotion = useReducedMotion();
   const [pokes, setPokes] = useState<number | null>(null);
   const [online, setOnline] = useState(true);
+  const [hitting, setHitting] = useState(false);
   const [pops, setPops] = useState<{ id: number; dx: number }[]>([]);
   const [burst, setBurst] = useState<Burst | null>(null);
   const nextId = useRef(0);
   const lastPoke = useRef(0);
+  const requests = useRef(new Set<AbortController>());
+  const timers = useRef(new Set<number>());
+  const mounted = useRef(false);
+  const hitPending = useRef(false);
+
+  function later(callback: () => void, delay: number) {
+    const timer = window.setTimeout(() => {
+      timers.current.delete(timer);
+      callback();
+    }, delay);
+    timers.current.add(timer);
+    return timer;
+  }
+
+  async function readCounter(action: "get" | "hit") {
+    const ctrl = new AbortController();
+    requests.current.add(ctrl);
+    const timeout = window.setTimeout(() => ctrl.abort(), 5000);
+    try {
+      const response = await fetch(`${POKE_API}/${action}/${POKE_PATH}`, { signal: ctrl.signal, cache: "no-store" });
+      if (action === "get" && response.status === 404) return 0;
+      if (!response.ok) throw new Error("Counter unavailable");
+      return counterValue(await response.json());
+    } finally {
+      window.clearTimeout(timeout);
+      requests.current.delete(ctrl);
+    }
+  }
 
   useEffect(() => {
-    const ctrl = new AbortController();
+    let active = true;
+    mounted.current = true;
+    const controllers = requests.current;
+    const scheduled = timers.current;
+    let source: EventSource | null = null;
+    let refreshTimer = 0;
+    let refreshPending = false;
+    let failures = 0;
+    let streaming = false;
 
-    fetch(`${POKE_API}/get/${POKE_PATH}`, { signal: ctrl.signal })
-      .then((r) => (r.status === 404 ? { value: 0 } : r.json()))
-      .then((d) => setPokes((p) => Math.max(p ?? 0, Number(d.value) || 0)))
-      .catch((e) => {
-        if (e.name !== "AbortError") setOnline(false);
-      });
+    function accept(value: number) {
+      if (!active) return;
+      setOnline(true);
+      setPokes((p) => Math.max(p ?? 0, value));
+    }
 
-    return () => ctrl.abort();
+    function scheduleRefresh() {
+      if (!active || document.hidden || streaming || refreshTimer) return;
+      refreshTimer = window.setTimeout(() => {
+        refreshTimer = 0;
+        void refresh();
+      }, Math.min(60_000, REFRESH_MS * 2 ** Math.min(failures, 3)));
+    }
+
+    async function refresh() {
+      if (!active || document.hidden || refreshPending) return;
+      refreshPending = true;
+      try {
+        accept(await readCounter("get"));
+        failures = 0;
+      } catch {
+        if (active && !document.hidden) {
+          failures += 1;
+          setOnline(false);
+        }
+      } finally {
+        refreshPending = false;
+        scheduleRefresh();
+      }
+    }
+
+    function connect() {
+      if (!active || document.hidden || source || typeof EventSource === "undefined") return;
+      try {
+        const connection = new EventSource(`${POKE_API}/stream/${POKE_PATH}`);
+        source = connection;
+        connection.onmessage = (event) => {
+          if (!active || source !== connection || document.hidden) return;
+          try {
+            accept(counterValue(JSON.parse(event.data)));
+            streaming = true;
+            failures = 0;
+            window.clearTimeout(refreshTimer);
+            refreshTimer = 0;
+          } catch { /* Ignore malformed messages; keep the last valid count. */ }
+        };
+        connection.onerror = () => {
+          if (!active || source !== connection) return;
+          streaming = false;
+          // EventSource reconnects automatically; reads bridge stream outages.
+          scheduleRefresh();
+        };
+      } catch { scheduleRefresh(); }
+    }
+
+    function onVisibility() {
+      if (document.hidden) {
+        source?.close();
+        source = null;
+        streaming = false;
+        window.clearTimeout(refreshTimer);
+        refreshTimer = 0;
+      } else {
+        connect();
+        void refresh();
+      }
+    }
+
+    onVisibility();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      active = false;
+      mounted.current = false;
+      source?.close();
+      window.clearTimeout(refreshTimer);
+      document.removeEventListener("visibilitychange", onVisibility);
+      controllers.forEach((ctrl) => ctrl.abort());
+      scheduled.forEach((timer) => window.clearTimeout(timer));
+      scheduled.clear();
+    };
   }, []);
 
   function celebrate(n: number) {
@@ -48,37 +166,39 @@ export default function PokeButton() {
       };
     });
     setBurst({ id, n, bits });
-    window.setTimeout(() => setBurst((b) => (b?.id === id ? null : b)), 1400);
+    later(() => setBurst((b) => (b?.id === id ? null : b)), 1400);
   }
 
   function poke() {
     const now = Date.now();
-    if (now - lastPoke.current < COOLDOWN_MS) return;
+    if (hitPending.current || now - lastPoke.current < COOLDOWN_MS) return;
     lastPoke.current = now;
+    hitPending.current = true;
+    setHitting(true);
 
     const id = (nextId.current += 1);
-    setPops((p) => [...p, { id, dx: Math.round(Math.random() * 60 - 30) }]);
-    window.setTimeout(() => setPops((p) => p.filter((x) => x.id !== id)), 800);
+    if (!reduceMotion) {
+      setPops((p) => [...p, { id, dx: Math.round(Math.random() * 60 - 30) }]);
+      later(() => setPops((p) => p.filter((x) => x.id !== id)), 800);
+    }
 
-    const count = (pokes ?? 0) + 1;
-    if (!reduceMotion && count % 100 === 0) celebrate(count);
-    setPokes((p) => Math.max(p ?? 0, count));
-
-    fetch(`${POKE_API}/hit/${POKE_PATH}`)
-      .then((r) => {
-        if (!r.ok) throw new Error(String(r.status));
-        return r.json();
-      })
-      .then((d) => {
+    void readCounter("hit")
+      .then((value) => {
+        if (!mounted.current) return;
         setOnline(true);
-        setPokes((p) => Math.max(p ?? 0, Number(d.value) || 0));
+        setPokes((p) => Math.max(p ?? 0, value));
+        if (!reduceMotion && value > 0 && value % 100 === 0) celebrate(value);
       })
-      .catch(() => setOnline(false));
+      .catch(() => { if (mounted.current) setOnline(false); })
+      .finally(() => {
+        hitPending.current = false;
+        if (mounted.current) setHitting(false);
+      });
   }
 
   return (
     <div className="poke-wrap">
-      <button type="button" className="poke" onClick={poke}>
+      <button type="button" className="poke" onClick={poke} disabled={hitting} aria-busy={hitting}>
         Poke Snowi: {pokes === null ? "…" : pokes.toLocaleString()}
       </button>
 

@@ -69,12 +69,23 @@ export default function Reel({
   // Simulan ang slide pagkatapos ng isang paint para na-commit muna ang reset sa itaas.
   // Ang timeout ay safety net (hal. background tab) para hindi ma-stuck ang spin.
   useEffect(() => {
-    if (!plan) return;
+    if (!plan || doneFor.current === plan.id) return;
+
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const onVisibility = () => {
+      if (document.hidden) finish(plan.id);
+    };
+    const onMotion = () => {
+      if (media.matches) finish(plan.id);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    media.addEventListener("change", onMotion);
 
     let second = 0;
     const first = requestAnimationFrame(() => {
       second = requestAnimationFrame(() => {
-        if (doneFor.current !== plan.id) setRun(true);
+        if (media.matches || document.hidden) finish(plan.id);
+        else if (doneFor.current !== plan.id) setRun(true);
       });
     });
     const safety = window.setTimeout(() => finish(plan.id), 1900 + delay + 800);
@@ -83,11 +94,19 @@ export default function Reel({
       cancelAnimationFrame(first);
       cancelAnimationFrame(second);
       window.clearTimeout(safety);
+      document.removeEventListener("visibilitychange", onVisibility);
+      media.removeEventListener("change", onMotion);
     };
   }, [plan, delay, finish]);
 
   function handleEnd(e: TransitionEvent<HTMLDivElement>) {
-    if (!run || !plan || e.target !== e.currentTarget) return;
+    if (
+      !run ||
+      !plan ||
+      e.target !== e.currentTarget ||
+      e.propertyName !== "transform"
+    )
+      return;
     finish(plan.id);
   }
 
@@ -95,7 +114,10 @@ export default function Reel({
   const timing = { transitionDuration: run ? `${1900 + delay}ms` : "0ms" };
 
   const rows = strip.map((text, i) => (
-    <div className={`item${long ? " item-long" : ""}`} key={i}>
+    <div
+      className={`item${long || text.length > 16 ? " item-long" : ""}${text.length > 28 ? " item-extra-long" : ""}`}
+      key={i}
+    >
       {text}
     </div>
   ));
@@ -109,7 +131,7 @@ export default function Reel({
         <button
           type="button"
           className="lock"
-          aria-label={`Lock ${label}`}
+          aria-label={`${locked ? "Unlock" : "Lock"} ${label}`}
           aria-pressed={locked}
           onClick={onLock}
           disabled={busy || value === null}

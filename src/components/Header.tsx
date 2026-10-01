@@ -43,12 +43,22 @@ export default function Header({ spinning, spinCount }: HeaderProps) {
     if (!trackRef.current || !ballRef.current) return;
 
     const run = [
-      animate(trackRef.current, { left: ["0%", "100%"] }, loop),
+      animate(trackRef.current, { x: ["0%", "100%"] }, loop),
       animate(ballRef.current, { rotate: [0, 900] }, loop),
     ];
     rollRef.current = run;
-
-    return () => run.forEach((c) => c.stop());
+    const onVisibility = () => {
+      run.forEach((control) =>
+        document.hidden ? control.pause() : control.play(),
+      );
+    };
+    onVisibility();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      run.forEach((c) => c.stop());
+      rollRef.current = [];
+    };
   }, [reduceMotion]);
 
   useEffect(() => () => window.clearTimeout(peekTimer.current), []);
@@ -156,7 +166,7 @@ export default function Header({ spinning, spinCount }: HeaderProps) {
         </span>
       )}
 
-      <a className="logo" href="/">
+      <a className="logo" href={import.meta.env.BASE_URL}>
         Roulette ni snowi
       </a>
       <div className="top-right">

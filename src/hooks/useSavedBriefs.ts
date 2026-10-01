@@ -27,7 +27,8 @@ export function useSavedBriefs() {
       if (saved.length >= MAX_SAVED || saved.some((x) => sameBrief(x, b))) {
         return false;
       }
-      setSaved((list) => [createSaved(b), ...list]);
+      setSaved((list) => list.length >= MAX_SAVED || list.some((x) => sameBrief(x, b))
+        ? list : [createSaved(b), ...list]);
       return true;
     },
     [saved],

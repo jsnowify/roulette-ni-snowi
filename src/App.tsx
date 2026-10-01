@@ -1,6 +1,6 @@
-import Lenis from "lenis";
 import { useEffect, useMemo, useRef, useState } from "react";
 import CategoryNote from "./components/CategoryNote";
+import CustomEntries from "./components/CustomEntries";
 import Header from "./components/Header";
 import Reel from "./components/Reel";
 import SavedBriefs from "./components/SavedBriefs";
@@ -9,6 +9,8 @@ import { useCustomEntries } from "./hooks/useCustomEntries";
 import { usePersistentState } from "./hooks/usePersistentState";
 import { useSavedBriefs } from "./hooks/useSavedBriefs";
 import { article, briefSentence, fromSearch, toSearch } from "./lib/brief";
+import { copyText } from "./lib/clipboard";
+import { MAX_SAVED } from "./lib/saved";
 import { drawFromBag, makePlan, seededPick, todayKey } from "./lib/random";
 import { sfx } from "./lib/sound";
 import { isComplete, type Brief, type Key, type Plan } from "./types";
@@ -32,7 +34,7 @@ const SOUND_KEY = "roulette-ni-snowi:sound";
 const isBoolean = (v: unknown): v is boolean => typeof v === "boolean";
 
 export default function App() {
-  const { custom } = useCustomEntries();
+  const { custom, add: addCustom, remove: removeCustom } = useCustomEntries();
   const items = useMemo(() => mergeItems(custom), [custom]);
 
   // Kung galing sa share link (?brand=...&category=...), iyon ang unang laman.
@@ -50,6 +52,9 @@ export default function App() {
   const [spinId, setSpinId] = useState(0);
   const [spinning, setSpinning] = useState(false);
   const [copied, setCopied] = useState<"brief" | "link" | null>(null);
+  const [copyFailed, setCopyFailed] = useState(false);
+  const copyTimer = useRef(0);
+  const spinActive = useRef(false);
 
   const savedApi = useSavedBriefs();
 
@@ -76,7 +81,7 @@ export default function App() {
   const isSaved = current ? savedApi.has(current) : false;
 
   function spin(forced?: Partial<Record<Key, string>>) {
-    if (spinning) return;
+    if (spinActive.current) return;
     if (!forced && allLocked) return;
 
     const id = spinId + 1;
@@ -94,15 +99,23 @@ export default function App() {
 
     targetRef.current = nextPick;
     pending.current = Object.keys(fresh).length;
+    if (pending.current === 0) return;
+    spinActive.current = true;
 
     setPlans((p) => ({ ...p, ...fresh }));
     setSpinId(id);
     setCopied(null);
+    setCopyFailed(false);
     setSpinning(true);
-    if (soundOn) sfx.spin();
+    if (soundOn) {
+      sfx.setEnabled(true);
+      sfx.unlock();
+      sfx.spin();
+    }
   }
 
   function handleStop() {
+    if (!spinActive.current || pending.current <= 0) return;
     if (soundOn) sfx.stop();
     pending.current -= 1;
     if (pending.current > 0) return;
@@ -111,6 +124,7 @@ export default function App() {
     setPick(final);
     setHistory((h) => [final, ...h].slice(0, HISTORY_MAX));
     setSpinning(false);
+    spinActive.current = false;
     if (soundOn) sfx.done();
   }
 
@@ -132,17 +146,23 @@ export default function App() {
         ? sentence
         : `${window.location.origin}${window.location.pathname}?${search}`;
 
-    try {
-      await navigator.clipboard.writeText(text);
+    window.clearTimeout(copyTimer.current);
+    setCopyFailed(false);
+    if (await copyText(text)) {
       setCopied(kind);
-      window.setTimeout(() => setCopied((c) => (c === kind ? null : c)), 1500);
-    } catch (error) {
-      console.error("Failed to copy:", error);
+      copyTimer.current = window.setTimeout(() => setCopied(null), 1500);
+    } else {
+      setCopied(null);
+      setCopyFailed(true);
     }
   }
 
   function toggleSound() {
-    if (!soundOn) sfx.tick(); // pinapakinggan agad, at ina-unlock ang audio sa user click
+    sfx.setEnabled(!soundOn);
+    if (!soundOn) {
+      sfx.unlock();
+      sfx.tick();
+    }
     setSoundOn((v) => !v);
   }
 
@@ -162,7 +182,7 @@ export default function App() {
       window.history.replaceState(
         null,
         "",
-        `${window.location.pathname}?${search}`,
+        `${window.location.pathname}?${search}${window.location.hash}`,
       );
     } catch {
       /* hal. sandboxed iframe: okay lang, may "Copy link" pa rin */
@@ -170,10 +190,13 @@ export default function App() {
   }, [search]);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    const lenis = new Lenis({ autoRaf: true });
-    return () => lenis.destroy();
+    const onVisibility = () => { if (document.hidden) sfx.silence(); };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.clearTimeout(copyTimer.current);
+      sfx.setEnabled(false);
+    };
   }, []);
 
   // Isang listener lang, pero laging ang pinakabagong spin() ang tinatawag.
@@ -184,7 +207,7 @@ export default function App() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.code === "Space" && e.target === document.body) {
+      if (e.code === "Space" && !e.repeat && e.target === document.body) {
         e.preventDefault();
         spinRef.current();
       }
@@ -198,10 +221,15 @@ export default function App() {
       <Header spinning={spinning} spinCount={spinId} />
 
       <h1 className="title">
+        <span className="sr-only">Roulette ni snowi: Website project idea generator. </span>
         Spin for your
         <br />
         next website.
       </h1>
+      <p className="intro">
+        A free website project idea generator for developers and designers.
+        Spin for a brand, category, and mood, then build something new.
+      </p>
 
       <section className="machine" aria-label="Roulette reels">
         {reels.map((r) => (
@@ -310,12 +338,21 @@ export default function App() {
                   type="button"
                   className="copy"
                   onClick={save}
-                  disabled={isSaved}
+                  disabled={isSaved || savedApi.saved.length >= MAX_SAVED || spinning}
                 >
-                  {isSaved ? "Saved" : "Save brief"}
+                  {isSaved ? "Saved" : savedApi.saved.length >= MAX_SAVED ? "Saved list full" : "Save brief"}
                 </button>
               </div>
             </div>
+
+            {copyFailed && (
+              <div className="copy-fallback" role="status">
+                <p>This browser blocked copying. Select and copy the text below.</p>
+                <textarea aria-label="Text to copy" readOnly
+                  value={sentence + "\n" + `${window.location.origin}${window.location.pathname}?${search}`}
+                  onFocus={(event) => event.currentTarget.select()} />
+              </div>
+            )}
 
             <CategoryNote name={current.category} />
           </section>
@@ -344,6 +381,13 @@ export default function App() {
           onRemove={savedApi.remove}
         />
       )}
+
+      <CustomEntries
+        custom={custom}
+        busy={spinning}
+        onAdd={addCustom}
+        onRemove={removeCustom}
+      />
 
       <footer className="footer">
         <span>Made for indecisive developers.</span>

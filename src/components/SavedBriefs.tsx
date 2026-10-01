@@ -13,7 +13,7 @@ export default function SavedBriefs({
   onRemove,
 }: SavedBriefsProps) {
   return (
-    <section className="saved">
+    <section className="saved" aria-label="Saved briefs">
       <ul>
         {saved.map((x) => (
           <li key={x.id} className={x.done ? "is-done" : ""}>
@@ -28,6 +28,7 @@ export default function SavedBriefs({
             <button
               type="button"
               className="remove"
+              aria-label={`Remove saved brief for ${x.brand}`}
               onClick={() => onRemove(x.id)}
             >
               Remove
