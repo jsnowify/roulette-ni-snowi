@@ -1,7 +1,8 @@
+import { mockCounter } from './support';
 import { test, expect } from '@playwright/test';
 
 test.beforeEach(async ({ page }) => {
-  await page.route('https://abacus.jasoncameron.dev/**', route => route.fulfill({ json: { value: 101 } }));
+  await page.route('https://abacus.jasoncameron.dev/**', mockCounter);
   await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => route.abort());
 });
 

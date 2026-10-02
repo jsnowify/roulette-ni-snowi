@@ -14,6 +14,8 @@ export default function SavedBriefs({
 }: SavedBriefsProps) {
   return (
     <section className="saved" aria-label="Saved briefs">
+      <p className="result-label">Your project archive</p>
+      <p className="archive-note">Saved briefs and completed brands. Your current challenge stays fixed until you finish it.</p>
       <ul>
         {saved.map((x) => (
           <li key={x.id} className={x.done ? "is-done" : ""}>

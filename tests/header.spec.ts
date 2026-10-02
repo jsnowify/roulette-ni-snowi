@@ -1,9 +1,10 @@
+import { mockCounter } from './support';
 import { test, expect } from '@playwright/test';
 
 for (const width of [320, 768, 1280]) {
 test(`header roller stays within ${width}px and keeps its eye on the cursor`, async ({ page }) => {
   await page.setViewportSize({ width, height: 800 });
-  await page.route('https://abacus.jasoncameron.dev/**', route => route.fulfill({ json: { value: 101 } }));
+  await page.route('https://abacus.jasoncameron.dev/**', mockCounter);
   await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => route.abort());
   await page.emulateMedia({ reducedMotion: 'no-preference' });
   await page.goto('/');
@@ -81,7 +82,7 @@ test(`header roller stays within ${width}px and keeps its eye on the cursor`, as
 }
 
 test('reduced motion removes the decorative roller', async ({ page }) => {
-  await page.route('https://abacus.jasoncameron.dev/**', route => route.fulfill({ json: { value: 101 } }));
+  await page.route('https://abacus.jasoncameron.dev/**', mockCounter);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/');
   await expect(page.locator('.roller')).toHaveCount(0);

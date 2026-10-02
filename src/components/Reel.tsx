@@ -10,11 +10,9 @@ type ReelProps = {
   value: string | null;
   plan: Plan | null;
   delay: number;
-  locked: boolean;
-  busy: boolean;
+  assigned?: boolean;
   long?: boolean;
   compact?: boolean;
-  onLock: () => void;
   onStop: () => void;
 };
 
@@ -24,15 +22,18 @@ export default function Reel({
   value,
   plan,
   delay,
-  locked,
-  busy,
+  assigned,
   long,
   compact,
-  onLock,
   onStop,
 }: ReelProps) {
   const [strip, setStrip] = useState<string[]>(() => around(items, value));
   const [run, setRun] = useState(false);
+  const [previousValue, setPreviousValue] = useState(value);
+  if (value !== previousValue) {
+    setPreviousValue(value);
+    if (!run && (!plan || plan.value !== value)) setStrip(around(items, value));
+  }
   // Naka-initialize sa kasalukuyang plan: kapag nag-mount ulit ang reel (hal. nag-on ng
   // Extra reels), hindi nito ipe-play ang lumang plan.
   const [seen, setSeen] = useState(() => plan?.id ?? 0);
@@ -128,16 +129,7 @@ export default function Reel({
         <span>
           {label} <small>{String(items.length).padStart(3, "0")} entries</small>
         </span>
-        <button
-          type="button"
-          className="lock"
-          aria-label={`${locked ? "Unlock" : "Lock"} ${label}`}
-          aria-pressed={locked}
-          onClick={onLock}
-          disabled={busy || value === null}
-        >
-          {locked ? "Locked" : "Lock"}
-        </button>
+        <span className="reel-state">{assigned ? 'Assigned' : 'Chance decides'}</span>
       </div>
 
       <div className="window" aria-hidden="true">
@@ -164,6 +156,7 @@ export default function Reel({
             {rows}
           </div>
         </div>
+        {value === null && !plan && <span className="reel-placeholder">{label === 'Brand' ? 'Your next brand' : label === 'Category' ? 'Your creative territory' : 'Your visual mood'}</span>}
       </div>
     </div>
   );

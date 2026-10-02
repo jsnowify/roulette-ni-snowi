@@ -1,7 +1,8 @@
+import { mockCounter } from './support';
 import { test, expect } from '@playwright/test';
 
 test('wheel scrolling eases to its target and follows reduced motion changes', async ({ page }) => {
-  await page.route('https://abacus.jasoncameron.dev/**', route => route.fulfill({ json: { value: 101 } }));
+  await page.route('https://abacus.jasoncameron.dev/**', mockCounter);
   await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => route.abort());
   await page.setViewportSize({ width: 1000, height: 400 });
   await page.emulateMedia({ reducedMotion: 'no-preference' });

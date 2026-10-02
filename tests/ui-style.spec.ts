@@ -1,3 +1,4 @@
+import { mockCounter } from './support';
 import { test, expect } from '@playwright/test';
 import { buttonText, contrast, correctPalette } from '../src/lib/colors';
 import { UI_STYLES } from '../src/data/uiStyles';
@@ -24,7 +25,7 @@ test('contrast math and correction keep two, three, and four color palettes read
 });
 
 test('palette modes, correction, font direction, and CSS export work on mobile', async ({ page, context }) => {
-  await page.route('https://abacus.jasoncameron.dev/**', route => route.fulfill({ json: { value: 101 } }));
+  await page.route('https://abacus.jasoncameron.dev/**', mockCounter);
   await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => route.abort());
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.setViewportSize({ width: 375, height: 812 });
@@ -68,7 +69,7 @@ test('font suggestions exist in the catalog and requests deduplicate families', 
 
 test('custom Google Fonts, fourth surface color, and bounded text survive unavailable fonts', async ({ page, context }) => {
   const fontRequests: string[] = [];
-  await page.route('https://abacus.jasoncameron.dev/**', route => route.fulfill({ json: { value: 101 } }));
+  await page.route('https://abacus.jasoncameron.dev/**', mockCounter);
   await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => {
     fontRequests.push(route.request().url());
     return route.abort();
@@ -115,12 +116,12 @@ test('custom Google Fonts, fourth surface color, and bounded text survive unavai
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await guide.getByLabel('Headline', { exact: true }).fill('');
-  await expect(guide.locator('.ui-preview h3')).toHaveText('Make the next step clear.');
+  await expect(guide.locator('.ui-preview h3')).toHaveText('Make the unexpected yours.');
   await guide.getByLabel('Headline', { exact: true }).fill('<img src=x onerror=alert(1)>');
   await expect(guide.locator('.ui-preview h3')).toHaveText('<img src=x onerror=alert(1)>');
   await expect(guide.locator('.ui-preview img')).toHaveCount(0);
   await guide.getByRole('button', { name: 'Reset preview text' }).click();
-  await expect(guide.getByLabel('Headline', { exact: true })).toHaveValue('Make the next step clear.');
+  await expect(guide.getByLabel('Headline', { exact: true })).toHaveValue('Make the unexpected yours.');
   await guide.getByRole('button', { name: 'Copy UI CSS' }).click();
   const css = await page.evaluate(() => navigator.clipboard.readText());
   expect(css).toContain('@import url("https://fonts.googleapis.com/css2?');

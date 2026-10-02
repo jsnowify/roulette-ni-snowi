@@ -1,128 +1,100 @@
 # Roulette ni snowi
 
-A random website brief generator for indecisive developers and designers. Spin the reels, get a brief, and build it.
+**One spin. One brand. One week.** Whatever the roulette gives you becomes the brand you have to build from scratch in seven days.
 
-> **Build Hoshi, a Luxury website. Mood: Calm.**
+The challenge is to make the entire brand: concept and positioning, brand name, logo and visual identity, color palette, typography, graphic direction, UI design system, website design and development, brand assets, mockups, and a final presentation or showcase.
 
-No account, no backend. Everything runs in the browser.
+No account or backend. Everything runs in your browser.
 
-## Features
+## The challenge
 
-- **Slot-machine reels** for Brand, Category, and (optionally) Mood.
-- **Lock a reel** to keep its value while the others spin.
-- **Extra reels** toggle to add the Mood reel.
-- **Custom entries**: add and remove your own brands, categories, and moods. Up to 30 per reel, saved in this browser.
-- **Today's brief**: one brief that is the same for everyone on a given day.
-- **Shuffle bag**: an item doesn't repeat until every item has come up.
-- **Category notes**: a short, beginner-friendly explanation ("What it is" / "Think of") for each category.
-- **Copy brief / Copy link**: share the brief as text or as a link. The URL always matches the current brief.
-- **Save brief**: keep briefs in a list, tick them off when built, and remove them.
-- **Earlier spins**: shows your last 7 spins.
-- **Sound** toggle, off by default.
-- **Keyboard**: press `Space` to spin.
-- Respects `prefers-reduced-motion`.
+1. **Spin.** Draw a brand name and creative category, with an optional mood. The result is saved immediately, including during the reel animation. Refreshing keeps the same assignment.
+2. **Accept.** Commit to the assigned brand and start the seven-day clock. Acceptance also saves the brief when the archive has room.
+3. **Build.** Work through seven suggested daily milestones. Progress and the original deadline survive reloads and sync across open tabs in this browser.
+4. **Finish.** Complete all milestones, then finish the challenge. A finished challenge stays visible until you explicitly start your next one.
+
+An overdue challenge keeps its brief and progress so you can finish the work. The checklist is self-reported; there is no upload requirement or judging system. Completion can happen earlier than the deadline.
+
+Reel locks and repeated spins have been replaced by one fixed assignment. You cannot change its category or remove its mood after drawing. Shape the custom entry pool before a draw or for a future challenge. The assigned name is the starting point for developing the complete identity.
+
+## Supporting tools
+
+- **Extra reels** adds a Mood reel before you draw.
+- **Today's challenge** draws the same built-in assignment for everyone on the same local calendar date. It also counts as your one draw.
+- **Custom entries** adds up to 30 entries per reel, with a 40-character limit and duplicate checks. Removing an entry does not remove an existing assignment.
+- **Design workbench** suggests editable palettes and font pairings for your category and mood. Explore other visual expressions while keeping the brand constraint.
+- **Live preview** supports custom text, Google Fonts, two to four palette colors, contrast checks, contrast correction, and CSS export.
+- **Copy brief / Copy link** shares the assignment. Manual text selection is offered when the browser blocks clipboard access.
+- **Project archive** preserves existing saved briefs, completion checks, and removals, up to 200 entries. Finishing a challenge marks its matching archived brief complete.
+- **Sound** is optional and off by default. Press `Space` while the page body is focused to draw once.
+- **Previous assignments** keeps the last seven assignments in the current session.
+
+Space Grotesk leads the typography, paired with IBM Plex Mono for labels and controls. The monochrome identity, angular reel bands, rolling-eye header, and optional Poke Snowi counter remain. The layout uses consistent spacing, compact reels, a project cover for the result, and responsive build milestones. Keyboard focus follows the draw and acceptance. Reduced motion is respected.
 
 ## Share links
 
-The current brief is stored in the URL:
-
-```
+```text
 ?brand=Hoshi&category=Luxury&mood=Calm
 ```
 
-`brand` and `category` are required, `mood` is optional. Opening a link with `mood` turns Extra reels on automatically. Values must match a built-in entry or a custom entry saved in the receiving browser. Use **Copy brief** to share custom briefs with someone who has different entries.
+Brand and category are required; mood is optional. A shared assignment can be accepted without another spin. An existing challenge takes precedence over a different shared link until you finish it.
 
-## Tech stack
+URL values must match built-in entries or custom entries stored in the receiving browser. Use Copy brief to share custom assignments with someone who has different entries. Once drawn or accepted, custom assignments remain available even if their entries are later removed.
 
-- [React](https://react.dev) + TypeScript, built with [Vite](https://vite.dev)
-- [Motion](https://motion.dev) for animation
-- Native browser scrolling for touch, keyboard, and embedded browsers
-- `localStorage` for saved briefs and settings (Extra reels, Sound)
+## Run locally
 
-## Getting started
-
-```bash
+```sh
 npm install
 npm run dev
 ```
 
-Then open the local URL Vite prints. Build for production with `npm run build`.
-
-## Project structure
-
+```sh
+npm run lint
+npm run build
 ```
+
+The app uses React, TypeScript, Vite, Motion, and Lenis. Touch and reduced-motion scrolling remain native; Lenis eases desktop wheel scrolling. Production syntax targets Chrome/Edge 87, Firefox 78, and Safari 14; runtime support still depends on the browser and host webview.
+
+## Structure
+
+```text
 src/
-├── App.tsx                  # main page: spin logic, controls, result, history
-├── main.tsx                 # entry point
-├── types.ts                 # Key, Brief, Plan types
-├── index.css                # all styles
-├── components/
-│   ├── Header.tsx           # animated header ball
-│   ├── PokeButton.tsx       # header easter egg
-│   ├── Reel.tsx             # one slot-machine reel
-│   ├── CategoryNote.tsx     # "What it is / Think of" note
-│   └── SavedBriefs.tsx      # saved briefs list
-├── data/
-│   ├── brands.ts            # fake brand names
-│   ├── categories.ts        # categories + explanations
-│   ├── moods.ts             # moods
-│   └── reels.ts             # reel definitions and merged item lists
-├── hooks/
-│   ├── usePersistentState.ts
-│   ├── useSavedBriefs.ts
-│   └── useCustomEntries.ts
-└── lib/
-    ├── brief.ts             # brief sentence, share link read/write
-    ├── random.ts            # shuffle bag, daily seeded pick, spin plans
-    ├── saved.ts             # saved brief model and storage cleanup
-    ├── sound.ts             # sound effects
-    └── storage.ts           # safe localStorage helpers
+  App.tsx                       # draw lifecycle, sharing, sound, and page composition
+  index.css                     # shared layout, typography, controls, and breakpoints
+  components/
+    ChallengeIntro.tsx          # challenge introduction, process, and scope
+    ChallengePlan.tsx           # seven-day deadline, milestones, and completion
+    Reel.tsx                    # animated reels with transition/timeout completion
+    UiStyleGuide.tsx            # palette, typography, preview, and CSS tools
+    Header.tsx                  # wordmark, rolling eye, and Poke Snowi
+    SavedBriefs.tsx             # saved project archive
+    CustomEntries.tsx           # custom draw pools
+  hooks/
+    useChallenge.ts             # immediate persistence and cross-tab synchronization
+    useSavedBriefs.ts           # saved briefs and legacy migration
+    useCustomEntries.ts         # validated custom entries
+  lib/
+    challenge.ts                # challenge model, validation, and seven-day build plan
+    brief.ts                    # brief text and URL handling
+    random.ts                   # shuffle bag, daily seeded draw, and animation plans
 ```
-
-## Customizing the content
-
-- **In the app**: open **Add your own entries**, choose a reel, and add an idea (up to 40 characters). Entries join the normal spin pool; Mood needs **Extra reels** enabled. Duplicate entries are rejected. Remove entries to exclude them from future spins; existing results and saved briefs stay available. Today's brief still uses only built-in entries.
-- **Brands**: edit `src/data/brands.ts`. They are fake on purpose, so you're free to design anything.
-- **Categories**: edit `src/data/categories.ts`. Each one has a `name`, a `what`, and a `think`. Keep the spelling of existing names, because saved briefs and share links use them.
-- **Moods**: edit `src/data/moods.ts`.
 
 ## Data and privacy
 
-Saved briefs, custom entries, and settings live only in your browser's `localStorage`. These are not sent anywhere, and clearing your browser data removes them.
+Assignments, progress, saved briefs, entries, and settings live only in this browser's localStorage. Clearing browser data removes them. If storage is blocked or full, the app works in memory but cannot guarantee persistence. A full project archive does not prevent accepting or tracking a challenge.
 
-Fonts are requested from Google Fonts with local font fallbacks. The optional Poke Snowi counter contacts `abacus.jasoncameron.dev`; it does not receive your briefs. Counter outages do not block the generator.
+Google Fonts requests use system fallbacks if unavailable. Sound files load only after sound is enabled and reuse one cached Web Audio context. Muting or hiding the page stops playback. Missing files and blocked audio APIs do not block the challenge.
 
-The shared poke count updates live using Abacus's [Server-Sent Events endpoint](https://v2.jasoncameron.dev/abacus). Open, visible pages receive changes from other visitors without a reload. If streaming is unavailable, the app refreshes every 10 seconds, backing off up to 60 seconds on read failures. Hidden pages close the stream and pause refreshes; returning reconnects and fetches the latest count. Pokes are shown in the count only after the server confirms them; the button waits for each increment request to finish so clicks are not silently dropped during background reads.
+The optional Poke Snowi counter contacts `abacus.jasoncameron.dev`; it does not receive your brief. Visible pages follow the shared count through Server-Sent Events, with a polling fallback. Hidden pages pause the connection, and failed increments do not invent count changes. Counter failures do not block the challenge.
 
-## Search and sharing
-
-The static HTML includes Google site verification, a descriptive title and summary, Open Graph and Twitter previews, and WebApplication structured data. The canonical URL is `https://roulette-ni-snowi.vercel.app/`; shared brief query parameters canonicalize to the home page.
-
-After deploying, verify the URL-prefix property in Google Search Console and submit `https://roulette-ni-snowi.vercel.app/sitemap.xml`. The verification tag must be present on the deployed page before Google can verify ownership. If the production domain changes, update `index.html`, `public/robots.txt`, and `public/sitemap.xml` together.
-
-SEO references: [Google's developer guide](https://developers.google.com/search/docs/fundamentals/get-started-developers) and [JavaScript SEO basics](https://developers.google.com/search/docs/crawling-indexing/javascript/javascript-seo-basics).
-
-## Credits
-
-Made by [snowi](https://snowi-cambronero.vercel.app/).
-
-## Reliability and browser checks
-
-Sound files load only after enabling sound or spinning with a saved sound preference. One Web Audio context is unlocked by that click or keypress, and the four decoded effects are cached. Muting or hiding the page stops active effects, cancels pending effects, and suspends the audio context. Slow downloads and missing files remain silent. Sound is optional; the app still works when audio APIs are unavailable. Device silent mode and embedded-browser policies still need device testing.
-
-Reels complete through transition events, with a timeout fallback. Backgrounding completes the current spin without leaving the controls stuck. Reduced-motion spins finish immediately. Native scrolling avoids a continuous smooth-scroll animation loop. The decorative header uses transforms and pauses its main loop while hidden.
-
-Production output explicitly targets Chrome/Edge 87, Firefox 78, and Safari 14 syntax instead of inheriting newer Vite defaults. This is a compilation target, not certification of every browser version: runtime APIs, Motion, and the host webview also determine compatibility. See [Vite browser compatibility](https://vite.dev/guide/build#browser-compatibility) and [WebKit media gesture policies](https://webkit.org/blog/7734/auto-play-policy-changes-for-macos/).
-
-Run the production-browser regression suite:
+## Browser checks
 
 ```sh
-npm ci
 npx playwright install chromium firefox webkit
 npm test
 ```
 
-On this Windows machine, installed Chrome, Edge, and Brave can be tested without downloading Playwright browsers:
+On this Windows machine, installed Chrome, Edge, and Brave can be used:
 
 ```powershell
 $env:PLAYWRIGHT_LOCAL_BROWSERS = '1'
@@ -130,10 +102,14 @@ npm test
 Remove-Item Env:PLAYWRIGHT_LOCAL_BROWSERS
 ```
 
-The local Brave path is configured in `playwright.config.ts`; adjust it on another machine. Default projects remain Chromium, Firefox, and WebKit. Tests cover 280–1280px layouts, 40-character entries, normal and reduced motion, locking, daily picks, history, saving/reloading, custom entries, blocked storage/clipboard/audio, failed sound requests, audio reuse/muting, transition fallback, backgrounding, and touch portrait/landscape emulation. Counter requests are mocked, so tests do not change the shared counter.
+The Brave executable path is configured in `playwright.config.ts`. Tests mock the counter and external fonts. Coverage includes the full challenge lifecycle, reloads during a draw, cross-tab progress, overdue assignments, corrupt or blocked storage, a full archive, clipboard fallback, sound caching/muting, transition timeout, backgrounding, long custom text, keyboard interaction, short viewports, and layouts from 280 to 2560 pixels.
 
-Touch emulation and an altered user-agent string do not reproduce Messenger itself. Before release, check the deployed HTTPS site in real Messenger browsers on Android and iPhone, Safari on iPhone/iPad, and Firefox. Enable sound, spin several times, mute midway, switch apps/lock the phone, return and spin again. Verify Copy brief/Copy link (including manual fallback), save/reload, extra reels, custom entries with the keyboard open, portrait/landscape, and enlarged text. A blocked audio policy must leave the generator usable.
+Touch emulation does not establish real Messenger or mobile-device compatibility. Real iPhone/iPad, Android, and embedded-browser checks remain useful for audio policies, viewport changes when the keyboard opens, and clipboard restrictions.
 
-Local audit on October 1, 2026: all 66 tests passed across installed Chrome, Edge, and Brave. Lint and production build passed; the production dependency audit reported zero vulnerabilities. Firefox and WebKit browser downloads timed out, so those engines and real Messenger devices remain unverified. The three tested desktop browsers all use Chromium; they do not establish Safari or Firefox compatibility.
+## Search and sharing
 
-Storage being blocked or full keeps the app usable in memory, but settings and briefs may not survive reloading. A full saved list disables saving until an entry is removed. Today's brief uses the user's local calendar date; people on the same date get the same built-in choices.
+Static HTML, Open Graph/Twitter summaries, the no-JavaScript introduction, and WebApplication structured data communicate the seven-day brand challenge. The canonical URL is `https://roulette-ni-snowi.vercel.app/`. Google site verification, robots.txt, and sitemap.xml are retained. If the production domain changes, update these together.
+
+## Credits
+
+Made by [snowi](https://snowi-cambronero.vercel.app/).

@@ -1,8 +1,9 @@
+import { mockCounter } from './support';
 import { test, expect } from '@playwright/test';
 import { suggestedStyle } from '../src/lib/styleSuggestion';
 
 test.beforeEach(async ({ page }) => {
-  await page.route('https://abacus.jasoncameron.dev/**', route => route.fulfill({ json: { value: 101 } }));
+  await page.route('https://abacus.jasoncameron.dev/**', mockCounter);
   await page.route(/https:\/\/fonts\.(googleapis|gstatic)\.com\//, route => route.abort());
 });
 
@@ -42,7 +43,7 @@ for (const width of [280, 320, 375, 390, 540, 720, 768, 960, 1280, 1440, 1920, 2
   });
 }
 
-test('completed spins match palette suggestions without resetting text or palette size', async ({ page }) => {
+test('accepting a shared brand preserves palette exploration, text, and palette size', async ({ page }) => {
   expect(suggestedStyle({ brand: 'Example', category: 'Luxury', mood: 'Dark' })).toBe(2);
   expect(suggestedStyle({ brand: 'Example', category: 'Luxury', mood: 'Calm' })).toBe(3);
   await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -55,13 +56,12 @@ test('completed spins match palette suggestions without resetting text or palett
   await guide.getByLabel('Headline', { exact: true }).fill('My own headline');
   await guide.getByRole('button', { name: 'Try another direction' }).click();
   await expect(guide.locator('.ui-style-name')).toHaveText('Fresh product');
-  await page.getByRole('button', { name: 'Lock Brand', exact: true }).click();
-  await page.getByRole('button', { name: 'Lock Category', exact: true }).click();
-  await page.getByRole('button', { name: 'Lock Mood', exact: true }).click();
-  await expect(page.getByRole('button', { name: /^Unlock a reel/ })).toBeDisabled();
-  // Today's brief unlocks reels and always completes a new suggestion.
-  await page.getByRole('button', { name: "Today's brief", exact: true }).click();
-  await expect(guide.locator('.ui-guide-message')).toHaveText('Palette and fonts matched to your new brief.');
+  // Exploring expression never changes the assigned brand or resets custom copy.
+  await expect(page.locator('.spin')).toBeDisabled();
+  await expect(page.getByRole('button', { name: "Today's challenge", exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: /^Accept challenge/ }).click();
+  await expect(page.locator('.brief')).toContainText('Hoshi');
+  await expect(guide.locator('.ui-style-name')).toHaveText('Fresh product');
   await expect(guide.getByRole('button', { name: '4 colors', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await expect(guide.getByLabel('Headline', { exact: true })).toHaveValue('My own headline');
   await expect(guide.getByText(/Needs correction/)).toHaveCount(0);

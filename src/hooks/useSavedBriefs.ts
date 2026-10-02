@@ -17,6 +17,14 @@ export function useSavedBriefs() {
     writeJSON(SAVED_KEY, saved);
   }, [saved]);
 
+  useEffect(() => {
+    const sync = (event: StorageEvent) => {
+      if (event.key === SAVED_KEY || event.key === null) setSaved(loadSaved());
+    };
+    window.addEventListener('storage', sync);
+    return () => window.removeEventListener('storage', sync);
+  }, []);
+
   const has = useCallback(
     (b: BriefLike) => saved.some((x) => sameBrief(x, b)),
     [saved],

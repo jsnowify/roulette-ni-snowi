@@ -1,3 +1,4 @@
+import ActionIcon from './ActionIcon';
 import { useEffect, useState, type CSSProperties } from 'react';
 import { UI_STYLES } from '../data/uiStyles';
 import { buttonText, contrast, correctPalette } from '../lib/colors';
@@ -17,10 +18,13 @@ export default function UiStyleGuide({ brief, revision }: { brief: BriefLike | n
   const [headingFont, setHeadingFont] = useState<string>(UI_STYLES[initialStyle].heading);
   const [bodyFont, setBodyFont] = useState<string>(UI_STYLES[initialStyle].body);
   const [previousRevision, setPreviousRevision] = useState(revision);
+  const direction = JSON.stringify(brief);
+  const [previousDirection, setPreviousDirection] = useState(direction);
   const [fontStatus, setFontStatus] = useState('');
   const [previewText, setPreviewText] = useState(DEFAULT_PREVIEW);
-  if (previousRevision !== revision) {
+  if (previousRevision !== revision || previousDirection !== direction) {
     setPreviousRevision(revision);
+    setPreviousDirection(direction);
     setStyleIndex(initialStyle);
     setColors([...UI_STYLES[initialStyle].colors]);
     setHeadingFont(UI_STYLES[initialStyle].heading);
@@ -82,8 +86,8 @@ export default function UiStyleGuide({ brief, revision }: { brief: BriefLike | n
           {([2, 3, 4] as const).map(size => <button type="button" className="lock" key={size} aria-pressed={count === size} onClick={() => { setCount(size); setMessage(''); }}>{size} colors</button>)}
         </div>
       </div>
-      <p className="ui-guide-intro">Start with a small palette. Assign each color a job, then check the text and call to action before building.</p>
-      <p className="ui-suggestion-note">{brief ? `Suggested for ${brief.category}${brief.mood ? ` with a ${brief.mood} mood` : ''}. ` : ''}This is just a suggestion to get you started. You can still choose your own colors, fonts, and copy. Each completed spin suggests a new direction for your brief.</p>
+      <p className="ui-guide-intro">Your brand is the constraint. Its expression is yours to create. Explore a palette and type pairing, then make them part of a complete identity.</p>
+      <p className="ui-suggestion-note">{brief ? `Suggested for ${brief.category}${brief.mood ? ` with a ${brief.mood} mood` : ''}. ` : ''}This is just a suggestion to get you started. Choose your own colors, fonts, and copy while staying true to your assigned brand.</p>
       <div className="ui-guide-layout">
         <div>
           <p className="ui-style-name">{style.name}</p>
@@ -109,7 +113,7 @@ export default function UiStyleGuide({ brief, revision }: { brief: BriefLike | n
           <span className="ui-preview-tag">{previewText.tag.trim() || DEFAULT_PREVIEW.tag}</span>
           <h3 style={{ fontFamily: headingStack }}>{previewText.heading.trim() || DEFAULT_PREVIEW.heading}</h3>
           <div className="ui-preview-card"><p>{previewText.body.trim() || DEFAULT_PREVIEW.body}</p></div>
-          <span className="ui-preview-cta">{previewText.cta.trim() || DEFAULT_PREVIEW.cta} <span aria-hidden="true">↗</span></span>
+          <span className="ui-preview-cta">{previewText.cta.trim() || DEFAULT_PREVIEW.cta} <ActionIcon name="right" /></span>
           <span className="ui-preview-caption">Sample UI · live palette preview</span>
         </div>
       </div>

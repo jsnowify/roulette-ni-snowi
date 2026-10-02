@@ -1,4 +1,4 @@
-import type { Brief, Key } from "../types";
+import { isComplete, type Brief, type CompleteBrief, type Key } from "../types";
 
 /** Kahit anong object na may brand + category. Ang mood ay optional. */
 export type BriefLike = {
@@ -11,7 +11,7 @@ export const article = (word: string) => (/^[aeiou]/i.test(word) ? "an" : "a");
 
 export function briefSentence(b: BriefLike): string {
   const parts = [
-    `Build ${b.brand}, ${article(b.category)} ${b.category} website.`,
+    `Build ${b.brand}, ${article(b.category)} ${b.category} brand, from scratch in seven days.`,
   ];
   if (b.mood) parts.push(`Mood: ${b.mood}.`);
   return parts.join(" ");
@@ -40,7 +40,7 @@ export function toSearch(b: BriefLike): string {
 export function fromSearch(
   search: string,
   items: Record<Key, readonly string[]>,
-): Brief | null {
+): CompleteBrief | null {
   const p = new URLSearchParams(search);
   const read = (key: Key) => {
     const v = p.get(key);
@@ -51,5 +51,5 @@ export function fromSearch(
     category: read("category"),
     mood: read("mood"),
   };
-  return brief.brand !== null && brief.category !== null ? brief : null;
+  return isComplete(brief) ? brief : null;
 }

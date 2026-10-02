@@ -21,10 +21,10 @@ const loop = {
 
 type HeaderProps = {
   spinning: boolean;
-  spinCount: number;
+  stage: 'ready' | 'assigned' | 'building' | 'finished';
 };
 
-export default function Header({ spinning, spinCount }: HeaderProps) {
+export default function Header({ spinning, stage }: HeaderProps) {
   const reduceMotion = useReducedMotion();
 
   // Keep the eye open while hovering; restore the rolling ball on pointer leave.
@@ -190,8 +190,7 @@ export default function Header({ spinning, spinCount }: HeaderProps) {
       </a>
       <div className="top-right">
         <p className="status" role="status">
-          status: {spinning ? "spinning" : "ready"} / spins:{" "}
-          {String(spinCount).padStart(3, "0")}
+          {spinning ? 'Drawing your challenge' : stage === 'building' ? 'Week in progress' : stage === 'assigned' ? 'Your challenge is assigned' : stage === 'finished' ? 'Challenge complete' : 'A seven-day brand challenge'}
         </p>
         <PokeButton />
       </div>

@@ -31,7 +31,7 @@ export default function CustomEntries({
     if (busy) return;
     const result = onAdd(key, text);
     const messages: Record<AddResult, string> = {
-      ok: "Added to your reel. Spin to try it!",
+      ok: "Added to the pool for your next challenge.",
       empty: "Type an entry first.",
       duplicate: "That entry is already in this reel.",
       limit: `You can add up to ${MAX_PER_REEL} entries per reel. Remove one to make room.`,
@@ -47,7 +47,7 @@ export default function CustomEntries({
       </summary>
       <div className="more-body">
         <p className="empty">
-          Mix your own ideas into the reels. Saved in this browser. Mood entries
+          Shape the pool before your next challenge. Entries never change an assigned brand. Saved in this browser. Mood entries
           appear when Extra reels is on.
         </p>
         <form className="custom-form" onSubmit={submit}>

@@ -1,8 +1,8 @@
 export const PREVIEW_FIELDS = [
-  { key: 'tag', label: 'Eyebrow text', limit: 40, default: 'YOUR NEXT WEBSITE' },
-  { key: 'heading', label: 'Headline', limit: 100, default: 'Make the next step clear.' },
-  { key: 'body', label: 'Description', limit: 300, default: 'A focused headline, readable details, and one primary action give visitors a clear path forward.' },
-  { key: 'cta', label: 'Button text', limit: 40, default: 'Explore the project' },
+  { key: 'tag', label: 'Eyebrow text', limit: 40, default: 'A BRAND IN PROGRESS' },
+  { key: 'heading', label: 'Headline', limit: 100, default: 'Make the unexpected yours.' },
+  { key: 'body', label: 'Description', limit: 300, default: 'One assigned direction. A complete identity, digital experience, and final showcase built from scratch in seven days.' },
+  { key: 'cta', label: 'Button text', limit: 40, default: 'Meet the brand' },
 ] as const;
 export type PreviewKey = typeof PREVIEW_FIELDS[number]['key'];
 export const DEFAULT_PREVIEW = Object.fromEntries(PREVIEW_FIELDS.map(field => [field.key, field.default])) as Record<PreviewKey, string>;
