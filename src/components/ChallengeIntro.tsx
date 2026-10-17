@@ -15,8 +15,9 @@ export default function ChallengeIntro({ stage }: { stage: Stage }) {
         <div className="hero-main">
           <p className="eyebrow">A creative constraint for designers & developers</p>
           <h1 className="title" id="page-title">
-            Roulette<br />ni snowi<span className="title-period" aria-hidden="true">.</span>
+            Aster<span className="title-period" aria-hidden="true">.</span>
           </h1>
+          <p className="title-formerly">formerly known as <em>Roulette ni snowi</em></p>
           <p className="hero-rule">One spin. One brand. One week.</p>
           <p className="intro">
             Whatever the roulette gives you becomes the brand you have to build.

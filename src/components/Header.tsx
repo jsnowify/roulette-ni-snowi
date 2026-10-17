@@ -186,7 +186,7 @@ export default function Header({ spinning, stage }: HeaderProps) {
       )}
 
       <a className="logo" href={import.meta.env.BASE_URL}>
-        Roulette ni snowi
+        Aster
       </a>
       <div className="top-right">
         <p className="status" role="status">

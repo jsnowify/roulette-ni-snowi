@@ -376,6 +376,18 @@ a {
   color:var(--gray);
 }
 
+.title-formerly {
+  margin:-14px 0 20px;
+  font-family:var(--mono);
+  font-size:0.8rem;
+  color:var(--muted);
+}
+
+.title-formerly em {
+  font-style:normal;
+  color:var(--ink);
+}
+
 .hero-rule {
   font-family:var(--display);
   font-size:clamp(1.1rem,2vw,1.4rem);
