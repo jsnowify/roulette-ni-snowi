@@ -22,7 +22,7 @@ export default function ChallengePlan({ challenge, onToggle, onFinish, onNext }:
     const days = Math.max(1, Math.min(7, Math.ceil((due - now) / (24 * 60 * 60 * 1000))));
     return (<section className="build-plan" aria-labelledby="plan-title">
       <div className="section-heading">
-        <div><p className="result-label">02 / Build → Finish</p><h2 id="plan-title" tabIndex={-1}>Seven days. The whole brand.</h2></div>
+        <h2 id="plan-title" tabIndex={-1}>Seven days. The whole brand.</h2>
         <p className="plan-status" role="status">{challenge.finishedAt ? 'Challenge complete' : now >= due ? 'Your week is up. Finish your showcase.' : `${days} ${days === 1 ? 'day' : 'days'} remaining`}<span>{count} of 7 milestones complete</span></p>
       </div>
       <p className="section-intro">A suggested rhythm for your week. Check off each milestone when the work is ready.</p>

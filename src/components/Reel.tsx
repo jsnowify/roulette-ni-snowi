@@ -14,6 +14,9 @@ type ReelProps = {
   long?: boolean;
   compact?: boolean;
   onStop: () => void;
+  locked?: boolean;
+  canLock?: boolean;
+  onToggleLock?: () => void;
 };
 
 export default function Reel({
@@ -26,6 +29,9 @@ export default function Reel({
   long,
   compact,
   onStop,
+  locked,
+  canLock,
+  onToggleLock,
 }: ReelProps) {
   const [strip, setStrip] = useState<string[]>(() => around(items, value));
   const [run, setRun] = useState(false);
@@ -124,12 +130,24 @@ export default function Reel({
   ));
 
   return (
-    <div className={`reel${compact ? " reel-compact" : ""}`} data-run={run}>
+    <div className={`reel${compact ? " reel-compact" : ""}`} data-run={run} data-locked={!!locked}>
       <div className="reel-head">
         <span>
           {label} <small>{String(items.length).padStart(3, "0")} entries</small>
         </span>
-        <span className="reel-state">{assigned ? 'Assigned' : 'Chance decides'}</span>
+        {canLock ? (
+          <button
+            type="button"
+            className="reel-lock"
+            aria-pressed={!!locked}
+            aria-label={`Lock ${label}`}
+            onClick={onToggleLock}
+          >
+            {locked ? "Locked" : "Lock"}
+          </button>
+        ) : (
+          <span className="reel-state">{locked ? 'Locked' : assigned ? 'Assigned' : 'Chance decides'}</span>
+        )}
       </div>
 
       <div className="window" aria-hidden="true">

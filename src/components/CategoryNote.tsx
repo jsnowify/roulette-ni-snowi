@@ -7,7 +7,7 @@ export default function CategoryNote({ name }: { name: string }) {
 
   return (
     <div className="note">
-      <p className="result-label">About {info.name}</p>
+      <h3 className="sub-title">About {info.name}</h3>
       <p>
         <strong>What it is:</strong> {info.what}
       </p>

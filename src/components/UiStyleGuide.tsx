@@ -79,7 +79,6 @@ export default function UiStyleGuide({ brief, revision }: { brief: BriefLike | n
     <section className="ui-guide" aria-labelledby="ui-guide-title">
       <div className="ui-guide-heading">
         <div>
-          <p className="result-label">Design direction</p>
           <h2 id="ui-guide-title">Web UI colors & fonts</h2>
         </div>
         <div className="ui-guide-actions" role="group" aria-label="Palette size">

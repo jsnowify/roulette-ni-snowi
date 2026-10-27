@@ -48,6 +48,7 @@ export default function App() {
     const [plans, setPlans] = useState<Partial<Record<Key, Plan>>>({});
     const [spinId, setSpinId] = useState(0);
     const [spinning, setSpinning] = useState(false);
+    const [locks, setLocks] = useState<Record<Key, boolean>>({ brand: false, category: false, mood: false });
     const [copied, setCopied] = useState<"brief" | "link" | null>(null);
     const [copyFailed, setCopyFailed] = useState(false);
     const copyTimer = useRef(0);
@@ -61,7 +62,11 @@ export default function App() {
         category: new Set(),
         mood: new Set(),
     });
-    const displayedPick = spinning ? EMPTY : challenge?.brief ?? pick;
+    const base: Brief = challenge?.brief ?? pick;
+    // Habang umiikot, ang naka-lock na reel lang ang may laman.
+    const displayedPick: Brief = spinning
+        ? { brand: locks.brand ? base.brand : null, category: locks.category ? base.category : null, mood: locks.mood ? base.mood : null }
+        : base;
     const showMood = challenge ? challenge.brief.mood !== null : isComplete(pick) ? pick.mood !== null : extras;
     const reels = REEL_DEFS.filter((r) => showMood || !r.extra);
     // A drawn mood stays part of the assignment, independently of future settings.
@@ -70,20 +75,26 @@ export default function App() {
     const sentence = current ? challengeSentence(current) : "";
     const search = current ? toSearch(current) : "";
     const isSaved = current ? savedApi.has(current) : false;
+    // Hangga't hindi pa na-accept, pwedeng mag-lock ng reel at i-reroll ang iba.
+    const canReroll = !!current && !challenge?.acceptedAt && !spinning;
+    const isLocked = (key: Key) => canReroll && locks[key];
+    const allLocked = reels.every((r) => isLocked(r.key));
     function spin(forced?: Partial<Record<Key, string>>) {
-        if (spinActive.current || challenge || current)
+        if (spinActive.current || challenge?.acceptedAt || (current && !canReroll))
             return;
         const stored = readJSON<unknown>(CHALLENGE_KEY, null);
-        if (stored && isChallenge(stored)) {
+        if (stored && isChallenge(stored) && stored.acceptedAt) {
             updateChallenge(stored);
             return;
         }
         const id = spinId + 1;
-        const nextPick: Brief = { ...pick };
+        const nextPick: Brief = { ...base };
         const fresh: Partial<Record<Key, Plan>> = {};
         for (const r of reels) {
+            if (isLocked(r.key))
+                continue;
             const list = items[r.key];
-            const value = forced?.[r.key] ?? drawFromBag(list, bags.current[r.key], pick[r.key]);
+            const value = forced?.[r.key] ?? drawFromBag(list, bags.current[r.key], base[r.key]);
             nextPick[r.key] = value;
             fresh[r.key] = makePlan(list, value, id);
         }
@@ -136,6 +147,7 @@ export default function App() {
         if (!current || spinning || challenge?.acceptedAt)
             return;
         updateChallenge({ ...(challenge ?? createChallenge(current)), acceptedAt: Date.now() });
+        setLocks({ brand: false, category: false, mood: false });
         setPick(EMPTY);
         savedApi.add(current);
         window.requestAnimationFrame(() => document.getElementById('plan-title')?.focus());
@@ -157,6 +169,7 @@ export default function App() {
         if (!challenge?.finishedAt)
             return;
         updateChallenge(null);
+        setLocks({ brand: false, category: false, mood: false });
         setPick(EMPTY);
         setPlans({});
         setDesignRevision(previous => previous + 1);
@@ -246,25 +259,25 @@ export default function App() {
 
       <section className="workbench" aria-labelledby="draw-title">
         <div className="section-heading">
-          <div><p className="result-label">01 / {current ? 'Your assigned direction' : 'Leave the brief to chance'}</p><h2 id="draw-title">{current ? 'The brief is set.' : 'Meet your next brand.'}</h2></div>
-          <p className="workbench-note">{current ? 'Your creative constraint. Keep it.' : 'No rerolls. Make the unexpected work.'}</p>
+          <h2 id="draw-title">{current ? 'The brief is set.' : 'Meet your next brand.'}</h2>
+          <p className="workbench-note">{challenge?.acceptedAt ? 'Your creative constraint. Keep it.' : current ? 'Lock what you like. Reroll the rest.' : 'Make the unexpected work.'}</p>
         </div>
         <div className={`machine${showMood ? ' machine-with-mood' : ''}`} aria-label="Roulette reels" aria-busy={spinning}>
-        {reels.map((r) => (<Reel key={r.key} label={r.label} items={items[r.key]} value={displayedPick[r.key]} plan={plans[r.key] ?? null} delay={r.delay} assigned={!!current || !!challenge} long={r.long} compact={r.extra} onStop={handleStop}/>))}
+        {reels.map((r) => (<Reel key={r.key} label={r.label} items={items[r.key]} value={displayedPick[r.key]} plan={plans[r.key] ?? null} delay={r.delay} assigned={!!current || !!challenge} long={r.long} compact={r.extra} onStop={handleStop} locked={isLocked(r.key)} canLock={canReroll} onToggleLock={() => setLocks((l) => ({ ...l, [r.key]: !l[r.key] }))}/>))}
         </div>
 
       <div className="controls">
-        <button type="button" className="spin" onClick={() => spin()} disabled={spinning || !!challenge || !!current} aria-describedby="spin-hint">
+        <button type="button" className="spin" onClick={() => spin()} disabled={spinning || !!challenge?.acceptedAt || (!!current && (!canReroll || allLocked))} aria-describedby="spin-hint">
           <span>
             {spinning
             ? "Spinning"
-            : current ? "Your challenge is assigned" : "Spin for your challenge"}
+            : challenge?.acceptedAt ? "Your challenge is assigned" : current ? "Reroll unlocked reels" : "Spin for your challenge"}
           </span>
-          {!current && <span className="key">Space</span>}
-          <ActionIcon name={current ? 'lock' : 'spin'} className="spin-arrow" />
+          {!challenge?.acceptedAt && <span className="key">Space</span>}
+          <ActionIcon name={challenge?.acceptedAt ? 'lock' : 'spin'} className="spin-arrow" />
         </button>
         <p className="hint" id="spin-hint">
-          {current ? 'This is your project for the week. Build the entire brand around this result.' : 'The result is final. Accept your challenge to start the seven-day clock.'}
+          {challenge?.acceptedAt ? 'This is your project for the week. Build the entire brand around this result.' : current ? 'Lock the reels you want to keep, then reroll the rest. Accepting makes the brief final.' : 'Lock any reel after the first spin to keep it while you reroll. Accept to start the seven-day clock.'}
         </p>
 
         <div className="toggles">
@@ -284,7 +297,7 @@ export default function App() {
 
       <div aria-live="polite">
         {current && (<section className="result" aria-labelledby="assigned-brand">
-            <div className="section-heading"><p className="result-label">{challenge?.finishedAt ? 'Your finished brand' : challenge?.acceptedAt ? 'Your project for the week' : 'Your challenge / Assigned'}</p><span className="assignment-stamp">{challenge?.finishedAt ? 'Completed' : 'One brand · Seven days'}</span></div>
+            <div className="section-heading"><span className="assignment-stamp">{challenge?.finishedAt ? 'Completed' : 'One brand · Seven days'}</span></div>
             <div className="result-row">
               <h2 className="brief" id="assigned-brand" tabIndex={-1}>
                 <strong>{current.brand}</strong>{' '}<span className="brief-category">{current.category} brand</span>
@@ -322,7 +335,7 @@ export default function App() {
       {!challenge?.acceptedAt && <ChallengeScope />}
 
       {history.length > 1 && (<section className="history">
-          <p className="result-label">Previous assignments</p>
+          <h3 className="sub-title">Previous assignments</h3>
           <ul>
             {history.slice(1).map((h, i) => (<li key={i}>
                 {[h.brand, h.category, h.mood]

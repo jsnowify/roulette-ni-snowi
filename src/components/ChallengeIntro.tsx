@@ -13,7 +13,6 @@ export default function ChallengeIntro({ stage }: { stage: Stage }) {
     <>
       <section className="hero" aria-labelledby="page-title">
         <div className="hero-main">
-          <p className="eyebrow">A creative constraint for designers & developers</p>
           <h1 className="title" id="page-title">
             Aster<span className="title-period" aria-hidden="true">.</span>
           </h1>
@@ -26,7 +25,6 @@ export default function ChallengeIntro({ stage }: { stage: Stage }) {
           {stage === 'spin' && <a className="hero-jump" href="#draw-title">Go to the roulette <ActionIcon name="down" /></a>}
         </div>
         <aside className="hero-contract" aria-label="The challenge rule">
-          <p className="eyebrow">The time you get</p>
           <p className="week-number">07<span>days</span></p>
           <p className="contract-rule">
             You spin once.<br />You get the result.<br /><strong>You build it.</strong>
@@ -56,7 +54,6 @@ export function ChallengeScope() {
   return (
     <section className="scope" aria-labelledby="scope-title">
       <div>
-        <p className="result-label">The full scope</p>
         <h2 id="scope-title">A brand, from zero<br />to out in the world.</h2>
         <p>More than a website. Every part should tell the same story.</p>
       </div>
