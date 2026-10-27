@@ -110,9 +110,9 @@ a {
 
 .page {
   width:100%;
-  max-width:1240px;
+  max-width:none;
   margin:0 auto;
-  padding:28px max(40px,env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(40px,env(safe-area-inset-left));
+  padding:28px max(clamp(20px,4vw,72px),env(safe-area-inset-right)) max(28px,env(safe-area-inset-bottom)) max(clamp(20px,4vw,72px),env(safe-area-inset-left));
 }
 
 .page > *,.section-heading > *,.result-row > *,.top > * {
